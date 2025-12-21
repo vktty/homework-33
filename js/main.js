@@ -1,0 +1,13 @@
+let apiKey="3dcb628606a4aa5e5f3cb2e9d21fee6f",logo=document.getElementById("logo"),searchForm=document.getElementById("search-form"),searchPlaceholder=document.getElementById("search-placeholder"),searchResultList=document.getElementById("search-result"),container=document.getElementById("container"),searchResult=[];function createSearchList(e){searchResultList.innerHTML="",e.forEach(e=>{var t=document.createElement("li");t.classList.add("px-4","py-2","cursor-pointer","hover:bg-pink-300"),t.innerHTML=e.name,searchResultList.appendChild(t)})}async function getMovie(e){try{var t=(await(await fetch(`https://api.themoviedb.org/3/search/movie?&include_adult=false&language=en-US&page=1&query=${e}&api_key=`+apiKey)).json()).results.map(e=>({name:e.title,overview:e.overview,rating:e.vote_average?Math.round(e.vote_average)+"/10":"No reviews yet",year:e.release_date.split("-"),image:e.poster_path||null}));if(0===t.length)throw new Error("Movie not found");return t}catch(e){return console.log(e.message),null}}function createPoster({name:e,overview:t,rating:r,year:a,image:n}){return`
+            <div
+                class="hover:cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:scale-105 transform transition duration-300">
+                <img src="https://image.tmdb.org/t/p/w500${n}" alt="Movie Poster" class="w-full h-100 object-cover">
+                <div class="p-4">
+                    <h3 class="font-bold text-lg mb-2 text-pink-800">${e}</h3>
+                    <span class="block mb-[5px] font-medium text-pink-900">Rating: ${r} | ${a[0]}</span>
+                    <p class="text-gray-600 text-sm" >${t}</p>
+                </div>
+                </div>`}function generateContainer(e){return`
+        <section class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="result-container">
+        ${e}
+    </section>`}logo.addEventListener("click",()=>{container.innerHTML="",searchPlaceholder.value="",searchResultList.innerHTML=""}),searchPlaceholder.addEventListener("input",async e=>{let t=e.target.value.toLowerCase();0===searchResult.length&&(searchResult=await getMovie(t)),createSearchList(filterdResult=searchResult.filter(e=>e.name.toLowerCase().includes(t)));e=filterdResult.map(e=>createPoster(e)).join("");container.innerHTML=generateContainer(e)}),searchForm.addEventListener("submit",async e=>{e.preventDefault();var e=await getMovie(searchPlaceholder.value);null===e?container.innerHTML='<div class="w-auto text-center text-pink-700 font-bold text-5xl mx-auto mt-[80px]">Sorry, there is no such movie :(</div>':(searchPlaceholder.value="",searchResultList.innerHTML="",e=generateContainer(e.map(e=>createPoster(e)).join("")),container.innerHTML=e)});
