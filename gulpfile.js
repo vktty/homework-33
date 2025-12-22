@@ -4,34 +4,21 @@ const gulpprefixer = require('gulp-autoprefixer').default;
 const cssMin = require('gulp-clean-css');
 const uglify = require('gulp-uglify');
 const rename = require('gulp-rename')
-
+const tailwindcss = require('tailwindcss');
+const postCss = require('gulp-postcss');
+const prefixer = require('autoprefixer');
 
 const browserSync = require('browser-sync').create();
 const { deleteAsync } = require('del');
-// const concat = require('gulp-concat');
 
-// const paths = {
-//     style: {
-//         src: 'scss/*.scss',
-//         dist: 'dist/css/'
-//     },
-//     script: {
-//         src: 'js/*.js',
-//         dist:'dist/js/'
-//     }
-// }
-
-
-// function compiletailwind() {
-//     return src('./scss/tailwind.scss')
-//     .pipe(postCss([tailwind(), prefixer()]))
-//     .pipe(cssMin())
-//     .pipe(rename({suffix: '.min', extname: '.css'}))
-//     .pipe(dest('dist/css'))
-// }
+function compiletailwind() {
+    return src('tailwind/tailwind.css')
+    .pipe(postCss([tailwindcss(), prefixer()]))
+    .pipe(dest('dist/css'))
+}
 
 function compilecss() {
-    return src(['./scss/*.scss', '!./scss/tailwind.scss'])
+    return src('./scss/*.scss')
         .pipe(sass().on('error', sass.logError))
         .pipe(gulpprefixer({
             overrideBrowserslist: [
@@ -44,7 +31,7 @@ function compilecss() {
 }
 
 function cssmin() {
-    return src(['./dist/css/*.css', '!./dist/css/*.min.css'])
+    return src('./dist/css/*.css')
     .pipe(cssMin())
     .pipe(rename({ suffix: '.min' }))
     .pipe(dest('./dist/css'))
@@ -67,16 +54,18 @@ function live(done) {
         }
     })
 
+    watch('./scss/*.scss').on('change', clean);
     watch('./scss/*.scss', compilecss);
     watch('js/*.js', jsmin).on('change', browserSync.reload)
     watch('index.html').on('change', browserSync.reload)
+    watch(['tailwind/tailwind.css', './*.html', './js/**/*.js']).on('change', browserSync.reload)
 
     done();
 }
 
 function watchTask(done) {
-    // watch('scss/tailwind.scss', compiletailwind)
-    watch(['./scss/*.scss', '!./scss/tailwind.scss'], series(compilecss, cssmin))
+    watch(['tailwind/tailwind.css', './*.html', './js/*.js'], compiletailwind)
+    watch('./scss/*.scss', series(compilecss, cssmin))
     watch('js/*.js', jsmin)
 
     done();
@@ -84,8 +73,8 @@ function watchTask(done) {
 
 exports.default = series(
     clean,
-    // compiletailwind,
     compilecss,
+    compiletailwind,
     cssmin,
     jsmin,
     parallel(watchTask, live)
