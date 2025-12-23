@@ -58,13 +58,13 @@ function live(done) {
     watch('./scss/*.scss', compilecss);
     watch('js/*.js', jsmin).on('change', browserSync.reload)
     watch('index.html').on('change', browserSync.reload)
-    watch(['tailwind/tailwind.css', './*.html', './js/**/*.js']).on('change', browserSync.reload)
+    watch('tailwind/tailwind.css').on('change', browserSync.reload)
 
     done();
 }
 
 function watchTask(done) {
-    watch(['tailwind/tailwind.css', './*.html', './js/*.js'], compiletailwind)
+    watch('tailwind/tailwind.css', compiletailwind)
     watch('./scss/*.scss', series(compilecss, cssmin))
     watch('js/*.js', jsmin)
 
